@@ -1,40 +1,84 @@
+/* CodeEditor.module.css */
 .container {
-  padding: 2rem 0;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .title {
   text-align: center;
   color: var(--text-color);
-  margin-bottom: 2rem;
+  margin-bottom: 10px;
+}
+
+.questionSection {
+  background-color: var(--background-light);
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.questionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.questionBox {
+  background-color: var(--background);
+  padding: 15px;
+  border-radius: 5px;
+  border-left: 4px solid var(--primary-color);
+}
+
+.questionText {
+  white-space: pre-wrap;
+  margin: 0;
+  line-height: 1.5;
+  color: var(--text-color);
+}
+
+.loadingQuestion {
+  color: var(--text-light);
+  font-style: italic;
 }
 
 .controls {
   display: flex;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+  gap: 15px;
+  flex-wrap: wrap;
   align-items: center;
+  background-color: var(--background-light);
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.controlGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .select {
-  padding: 0.5rem;
-  border-radius: 0.25rem;
+  padding: 8px;
+  border-radius: 4px;
   border: 1px solid var(--border-color);
   background-color: var(--background);
   color: var(--text-color);
+  min-width: 120px;
 }
 
 .analyzeButton {
-  padding: 0.5rem 1rem;
   background-color: var(--primary-color);
   color: white;
+  padding: 8px 16px;
   border: none;
-  border-radius: 0.25rem;
+  border-radius: 4px;
   cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.analyzeButton:hover {
-  background-color: var(--primary-dark);
 }
 
 .analyzeButton:disabled {
@@ -42,89 +86,249 @@
   cursor: not-allowed;
 }
 
-.editorContainer {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+.newQuestionButton {
+  background-color: var(--success-color);
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
-.codeInput, .results {
-  border: 1px solid var(--border-color);
-  border-radius: 0.5rem;
-  padding: 1rem;
-  background-color: var(--background);
+.newQuestionButton:disabled {
+  background-color: var(--text-light);
+  cursor: not-allowed;
+}
+
+.testButton {
+  background-color: var(--primary-dark);
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-left: auto;
+}
+
+.testButton:disabled {
+  background-color: var(--text-light);
+  cursor: not-allowed;
+}
+
+.mainContent {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  min-height: 400px;
+}
+
+.codeEditorContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .textarea {
-  width: 100%;
-  min-height: 300px;
-  padding: 0.75rem;
+  flex-grow: 1;
+  padding: 15px;
+  border-radius: 5px;
   border: 1px solid var(--border-color);
-  border-radius: 0.25rem;
-  font-family: monospace;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 14px;
+  resize: none;
+  min-height: 300px;
   background-color: var(--background);
   color: var(--text-color);
-  resize: vertical;
 }
 
-.error {
-  background-color: rgba(220, 38, 38, 0.1);
+.testCasesPanel {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--background-light);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.tabs {
+  display: flex;
+  background-color: var(--border-color);
+}
+
+.tabButton {
+  padding: 10px 15px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-weight: 500;
+  color: var(--text-light);
+}
+
+.activeTab {
+  background-color: var(--background-light);
+  color: var(--text-color);
+  border-bottom: 2px solid var(--primary-color);
+}
+
+.testCasesContainer, .testResultsContainer {
+  padding: 15px;
+  flex-grow: 1;
+  overflow-y: auto;
+  max-height: 400px;
+}
+
+.testCase {
+  padding: 10px;
+  border-radius: 5px;
+  background-color: var(--background);
+  border: 1px solid var(--border-color);
+  margin-bottom: 10px;
+}
+
+.testCaseHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-weight: bold;
+  color: var(--text-color);
+}
+
+.testCaseContent {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.testCaseContent pre {
+  margin: 0;
+  padding: 8px;
+  background-color: var(--background-light);
+  border-radius: 4px;
+  white-space: pre-wrap;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 13px;
+  color: var(--text-color);
+}
+
+.passed {
+  border-left: 4px solid var(--success-color);
+}
+
+.failed {
+  border-left: 4px solid var(--error-color);
+}
+
+.passedIcon {
+  color: var(--success-color);
+  margin-right: 5px;
+}
+
+.failedIcon {
   color: var(--error-color);
-  padding: 0.75rem;
-  border-radius: 0.25rem;
-  margin-bottom: 1rem;
+  margin-right: 5px;
+}
+
+.noTestCases, .noResults, .loadingTests {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-light);
+  font-style: italic;
+}
+
+.analysisSection {
+  background-color: var(--background-light);
+  padding: 20px;
+  border-radius: 8px;
+  margin-top: 10px;
 }
 
 .complexityContainer {
   display: flex;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+  gap: 20px;
+  margin-bottom: 20px;
 }
 
 .complexityBox {
   flex: 1;
-  border: 1px solid var(--border-color);
-  border-radius: 0.5rem;
-  padding: 1rem;
-  background-color: var(--background-light);
+  background-color: var(--background);
+  padding: 15px;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .complexityBox h3 {
   margin-top: 0;
-  font-size: 1rem;
+  color: var(--text-color);
+  font-size: 16px;
 }
 
 .complexityValue {
-  font-size: 1.125rem;
   font-weight: bold;
-  margin-top: 0.5rem;
+  font-size: 18px;
+  color: var(--primary-color);
+}
+
+.suggestionBox {
+  background-color: color-mix(in srgb, var(--primary-color) 10%, transparent);
+  padding: 15px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  border-left: 4px solid var(--primary-color);
+}
+
+.suggestionBox h3 {
+  margin-top: 0;
+  color: var(--text-color);
+  font-size: 16px;
+}
+
+.suggestionText {
+  white-space: pre-wrap;
+  line-height: 1.5;
+  color: var(--text-color);
+}
+
+.correctedCodeSection {
+  margin-top: 20px;
+}
+
+.toggleCorrectedCode {
+  background-color: var(--border-color);
+  border: none;
+  padding: 10px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-bottom: 10px;
+  width: 100%;
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.correctedCodeBox {
+  background-color: var(--background);
+  padding: 15px;
+  border-radius: 5px;
+  border: 1px solid var(--border-color);
 }
 
 .codeBlock {
   background-color: var(--background-light);
-  padding: 0.75rem;
-  border-radius: 0.25rem;
+  padding: 15px;
+  border-radius: 4px;
   overflow-x: auto;
-  font-family: monospace;
-  white-space: pre-wrap;
+  white-space: pre;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 14px;
+  margin-bottom: 10px;
+  color: var(--text-color);
 }
 
-.spinner {
-  display: inline-block;
-  width: 1rem;
-  height: 1rem;
-  border: 2px solid rgba(255,255,255,0.3);
-  border-radius: 50%;
-  border-top-color: white;
-  animation: spin 1s ease-in-out infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-@media (max-width: 768px) {
-  .editorContainer {
-    grid-template-columns: 1fr;
-  }
+.useCorrectedButton {
+  background-color: var(--success-color);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
 }

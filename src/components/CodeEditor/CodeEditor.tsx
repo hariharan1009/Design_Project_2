@@ -11,6 +11,13 @@ interface AnalysisResult {
   correctedCode?: string;
 }
 
+interface TestCase {
+  input: string;
+  expectedOutput: string;
+  actualOutput?: string;
+  passed?: boolean;
+}
+
 const difficultyLevels = ["easy", "medium", "hard"];
 const questionTopics = [
   "array", 
@@ -40,6 +47,10 @@ export default function CodeEditor() {
   const [showCorrectedCode, setShowCorrectedCode] = useState<boolean>(false);
   const [difficulty, setDifficulty] = useState<string>("medium");
   const [topic, setTopic] = useState<string>("array");
+  const [testCases, setTestCases] = useState<TestCase[]>([]);
+  const [testResults, setTestResults] = useState<TestCase[]>([]);
+  const [runningTests, setRunningTests] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState<"testcases" | "results">("testcases");
 
   const groq = new Groq({
     apiKey: process.env.NEXT_PUBLIC_GROQ_API_KEY,
@@ -59,18 +70,45 @@ export default function CodeEditor() {
           content: `Generate a ${difficulty} level ${language} coding question about ${topic} that would be appropriate for assessing time and space complexity. 
           The question should be challenging but solvable in about 20-30 lines of code. 
           Make sure the question clearly relates to ${topic} concepts.
-          Return ONLY the question text with no additional commentary or formatting.`
+          Also provide 3 test cases in JSON format with input and expected output.
+          Return the response in this exact format:
+          {
+            "question": "The generated question text",
+            "testCases": [
+              {
+                "input": "input value 1",
+                "expectedOutput": "expected output 1"
+              },
+              {
+                "input": "input value 2",
+                "expectedOutput": "expected output 2"
+              },
+              {
+                "input": "input value 3",
+                "expectedOutput": "expected output 3"
+              }
+            ]
+          }`
         }],
         model: "llama-3.3-70b-versatile",
         temperature: difficulty === "hard" ? 0.8 : difficulty === "medium" ? 0.7 : 0.6,
+        response_format: { type: "json_object" }
       });
 
-      const generatedQuestion = response.choices[0]?.message?.content;
-      if (generatedQuestion) {
-        setQuestion(generatedQuestion);
-      } else {
-        setQuestion("Couldn't generate a question. Click 'New Question' to try again.");
+      const content = response.choices[0]?.message?.content;
+      if (!content) {
+        throw new Error("Couldn't generate question");
       }
+
+      const result = JSON.parse(content);
+      setQuestion(result.question || "Couldn't generate question");
+      setTestCases(result.testCases || []);
+      setTestResults([]);
+      setCode("");
+      setAnalysis({
+        timeComplexity: "Not analyzed yet",
+        spaceComplexity: "Not analyzed yet"
+      });
     } catch (error) {
       setQuestion("We couldn't load a question. Please check your connection and try again.");
       console.error("Error generating question:", error);
@@ -151,42 +189,63 @@ ${code}
     }
   }, [code, language, question]);
 
-  const generateNewQuestion = async () => {
-    setQuestionLoading(true);
-    setCode("");
-    setShowCorrectedCode(false);
-    setAnalysis({
-      timeComplexity: "Not analyzed yet",
-      spaceComplexity: "Not analyzed yet",
-      suggestion: undefined,
-      correctedCode: undefined
-    });
-    
+  const runTestCases = async () => {
+    if (!code.trim()) {
+      alert("Please write your solution code first");
+      return;
+    }
+
+    setRunningTests(true);
+    setTestResults([]);
+    setActiveTab("results");
+
     try {
       const response = await groq.chat.completions.create({
         messages: [{
           role: "user",
-          content: `Generate a new ${difficulty} level ${language} coding question about ${topic} that would be appropriate for assessing time and space complexity. 
-          The question should be challenging but solvable in about 20-30 lines of code. 
-          Make sure the question clearly relates to ${topic} concepts.
-          Return ONLY the question text with no additional commentary or formatting.`
+          content: `Question: ${question}\n\nGiven this solution code in ${language}, run these test cases and return the results in JSON format with these exact fields for each test case:
+{
+  "testResults": [
+    {
+      "input": "original input",
+      "expectedOutput": "original expected output",
+      "actualOutput": "the actual output from running the code",
+      "passed": true/false
+    },
+    ...
+  ]
+}
+
+Solution code:
+\`\`\`${language}
+${code}
+\`\`\`
+
+Test cases to run:
+${JSON.stringify(testCases, null, 2)}`
         }],
         model: "llama-3.3-70b-versatile",
-        temperature: difficulty === "hard" ? 0.8 : difficulty === "medium" ? 0.7 : 0.6,
+        temperature: 0,
+        response_format: { type: "json_object" }
       });
 
-      const generatedQuestion = response.choices[0]?.message?.content;
-      if (generatedQuestion) {
-        setQuestion(generatedQuestion);
-      } else {
-        setQuestion("Couldn't generate a new question. Please try again.");
+      const content = response.choices[0]?.message?.content;
+      if (!content) {
+        throw new Error("Test execution failed");
       }
+
+      const result = JSON.parse(content);
+      setTestResults(result.testResults || []);
     } catch (error) {
-      setQuestion("We couldn't load a new question. Please try again later.");
-      console.error("Error generating question:", error);
+      console.error("Error running tests:", error);
+      alert("Failed to run test cases");
     } finally {
-      setQuestionLoading(false);
+      setRunningTests(false);
     }
+  };
+
+  const generateNewQuestion = async () => {
+    await generateQuestion();
   };
 
   return (
@@ -263,78 +322,174 @@ ${code}
         >
           {loading ? "Analyzing..." : "Analyze Solution"}
         </button>
+
+        <button 
+          onClick={runTestCases}
+          disabled={runningTests || questionLoading || testCases.length === 0}
+          className={styles.testButton}
+        >
+          {runningTests ? "Running Tests..." : "Run Test Cases"}
+        </button>
       </div>
 
-      <div className={styles.editorContainer}>
-        <div className={styles.codeInput}>
+      <div className={styles.mainContent}>
+        <div className={styles.codeEditorContainer}>
           <h2>Your Solution Code</h2>
           <textarea
             value={code}
             onChange={(e) => setCode(e.target.value)}
-            placeholder={`Write your ${language} solution here...`}
+            placeholder={`Write your ${language} solution here with proper space and syntax...`}
             spellCheck="false"
             className={styles.textarea}
             disabled={questionLoading}
           />
         </div>
 
-        <div className={styles.results}>
-          <h2>Complexity Analysis</h2>
-          
-          <div className={styles.complexityContainer}>
-            <div className={styles.complexityBox}>
-              <h3>Time Complexity</h3>
-              <div className={styles.complexityValue}>
-                {loading ? "..." : analysis.timeComplexity}
-              </div>
-            </div>
-            
-            <div className={styles.complexityBox}>
-              <h3>Space Complexity</h3>
-              <div className={styles.complexityValue}>
-                {loading ? "..." : analysis.spaceComplexity}
-              </div>
-            </div>
+        <div className={styles.testCasesPanel}>
+          <div className={styles.tabs}>
+            <button
+              className={`${styles.tabButton} ${activeTab === "testcases" ? styles.activeTab : ""}`}
+              onClick={() => setActiveTab("testcases")}
+            >
+              Test Cases
+            </button>
+            <button
+              className={`${styles.tabButton} ${activeTab === "results" ? styles.activeTab : ""}`}
+              onClick={() => setActiveTab("results")}
+            >
+              Results
+            </button>
           </div>
 
-          {analysis.suggestion && (
-            <div className={styles.suggestionBox}>
-              <h3>Suggestion</h3>
-              <div className={styles.suggestionText}>
-                {analysis.suggestion}
-              </div>
+          {activeTab === "testcases" ? (
+            <div className={styles.testCasesContainer}>
+              {testCases.length > 0 ? (
+                testCases.map((test, index) => (
+                  <div key={index} className={styles.testCase}>
+                    <div className={styles.testCaseHeader}>
+                      <span>Test Case {index + 1}</span>
+                    </div>
+                    <div className={styles.testCaseContent}>
+                      <div>
+                        <strong>Input:</strong> 
+                        <pre>{test.input}</pre>
+                      </div>
+                      <div>
+                        <strong>Expected:</strong> 
+                        <pre>{test.expectedOutput}</pre>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className={styles.noTestCases}>
+                  No test cases available for this question
+                </div>
+              )}
             </div>
-          )}
-
-          {analysis.correctedCode && analysis.correctedCode !== code && (
-            <div className={styles.correctedCodeSection}>
-              <button
-                onClick={() => setShowCorrectedCode(!showCorrectedCode)}
-                className={styles.toggleCorrectedCode}
-              >
-                {showCorrectedCode ? "Hide Corrected Code" : "Show Corrected Code"}
-              </button>
-              
-              {showCorrectedCode && (
-                <div className={styles.correctedCodeBox}>
-                  <h3>Optimized Solution</h3>
-                  <pre className={styles.codeBlock}>
-                    {analysis.correctedCode}
-                  </pre>
-                  <button
-                    onClick={() => {
-                      setCode(analysis.correctedCode || "");
-                      setShowCorrectedCode(false);
-                    }}
-                    className={styles.useCorrectedButton}
-                  >
-                    Use This Solution
-                  </button>
+          ) : (
+            <div className={styles.testResultsContainer}>
+              {runningTests ? (
+                <div className={styles.loadingTests}>Running tests...</div>
+              ) : testResults.length > 0 ? (
+                testResults.map((test, index) => (
+                  <div key={index} className={`${styles.testCase} ${test.passed ? styles.passed : styles.failed}`}>
+                    <div className={styles.testCaseHeader}>
+                      <span className={styles.testCaseStatus}>
+                        {test.passed ? (
+                          <span className={styles.passedIcon}>✓</span>
+                        ) : (
+                          <span className={styles.failedIcon}>✗</span>
+                        )}
+                        Test Case {index + 1} {test.passed ? "Passed" : "Failed"}
+                      </span>
+                    </div>
+                    <div className={styles.testCaseContent}>
+                      <div>
+                        <strong>Input:</strong> 
+                        <pre>{test.input}</pre>
+                      </div>
+                      <div>
+                        <strong>Expected:</strong> 
+                        <pre>{test.expectedOutput}</pre>
+                      </div>
+                      {!test.passed && (
+                        <div>
+                          <strong>Actual:</strong> 
+                          <pre>{test.actualOutput}</pre>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className={styles.noResults}>
+                  {testCases.length > 0 
+                    ? "Run tests to see results" 
+                    : "No test cases available"}
                 </div>
               )}
             </div>
           )}
         </div>
+      </div>
+
+      <div className={styles.analysisSection}>
+        <h2>Code Analysis</h2>
+        
+        <div className={styles.complexityContainer}>
+          <div className={styles.complexityBox}>
+            <h3>Time Complexity</h3>
+            <div className={styles.complexityValue}>
+              {loading ? "..." : analysis.timeComplexity}
+            </div>
+          </div>
+          
+          <div className={styles.complexityBox}>
+            <h3>Space Complexity</h3>
+            <div className={styles.complexityValue}>
+              {loading ? "..." : analysis.spaceComplexity}
+            </div>
+          </div>
+        </div>
+
+        {analysis.suggestion && (
+          <div className={styles.suggestionBox}>
+            <h3>Suggestion</h3>
+            <div className={styles.suggestionText}>
+              {analysis.suggestion}
+            </div>
+          </div>
+        )}
+
+        {analysis.correctedCode && analysis.correctedCode !== code && (
+          <div className={styles.correctedCodeSection}>
+            <button
+              onClick={() => setShowCorrectedCode(!showCorrectedCode)}
+              className={styles.toggleCorrectedCode}
+            >
+              {showCorrectedCode ? "Hide Corrected Code" : "Show Corrected Code"}
+            </button>
+            
+            {showCorrectedCode && (
+              <div className={styles.correctedCodeBox}>
+                <h3>Optimized Solution</h3>
+                <pre className={styles.codeBlock}>
+                  {analysis.correctedCode}
+                </pre>
+                <button
+                  onClick={() => {
+                    setCode(analysis.correctedCode || "");
+                    setShowCorrectedCode(false);
+                  }}
+                  className={styles.useCorrectedButton}
+                >
+                  Use This Solution
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
