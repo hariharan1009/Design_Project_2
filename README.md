@@ -1,7 +1,9 @@
 #  MockMate - AI Interview Simulator
 
 ## Overview
-MockMate is an AI-powered interview preparation platform built with Next.js (using TypeScript and CSS Modules) with App Router. It helps users master technical interviews through resume analysis, coding challenges, and mock interviews.
+MockMate is an AI-powered interview preparation platform built with Next.js (using TypeScript and CSS Modules) with App Router. It helps users master technical interviews through resume analysis, coding challenges, and mock interviews. 
+## Deployment link
+https://mock-mate-ai-interview-simulator.vercel.app
 
 ## Features
 - **AI-powered Interview Simulation**: Practice with realistic interview scenarios
