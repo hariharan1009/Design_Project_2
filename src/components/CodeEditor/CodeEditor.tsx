@@ -42,7 +42,7 @@ export default function CodeEditor() {
     spaceComplexity: "Not analyzed yet"
   });
   const [loading, setLoading] = useState<boolean>(false);
-  const [language, setLanguage] = useState<string>("javascript");
+  const [language, setLanguage] = useState<string>("java");
   const [questionLoading, setQuestionLoading] = useState<boolean>(true);
   const [showCorrectedCode, setShowCorrectedCode] = useState<boolean>(false);
   const [difficulty, setDifficulty] = useState<string>("medium");
