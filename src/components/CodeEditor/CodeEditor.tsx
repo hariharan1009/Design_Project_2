@@ -145,7 +145,7 @@ export default function CodeEditor() {
   "timeComplexity": "Big O time complexity (e.g., O(n))",
   "spaceComplexity": "Big O space complexity (e.g., O(1))",
   "suggestion": "Optional suggestions for improvement if needed",
-  "correctedCode": "Provide an optimized version of the code if improvements are possible, otherwise return the original code"
+  "correctedCode": "Provide an optimized version of the code if improvements are possible, otherwise return the original code.give the proper code with proper space and syntax"
 }
 
 Solution code in ${language}:
