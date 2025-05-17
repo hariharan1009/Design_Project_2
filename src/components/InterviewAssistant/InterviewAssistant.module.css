@@ -77,6 +77,7 @@
 
 /* Buttons */
 .button {
+  align-content: last baseline;
   padding: 12px 25px;
   background-color:#0f172a;
   color: white;
