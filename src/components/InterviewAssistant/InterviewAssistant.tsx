@@ -147,7 +147,14 @@ export default function InterviewAssistant() {
     }
   }
 
-  async function handleAnswerSubmit(event: React.FormEvent) {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleAnswerSubmit(e);
+    }
+  };
+
+  async function handleAnswerSubmit(event: React.FormEvent | React.KeyboardEvent) {
     event.preventDefault();
     if (!answer.trim()) return;
 
@@ -477,6 +484,7 @@ export default function InterviewAssistant() {
                 <textarea
                   value={answer}
                   onChange={(e) => setAnswer(e.target.value)}
+                  onKeyDown={handleKeyDown}
                   placeholder="Type your answer here..."
                   className={styles.input}
                   rows={4}
