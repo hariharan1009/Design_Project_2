@@ -4,10 +4,7 @@ import styles from './page.module.css';
 export default function HomePage() {
   return (
     <div className={styles.container}>
-      {/* Header */}
       
-
-      {/* Hero Section */}
       <section className={styles.hero}>
         <div className={styles.heroContent}>
           <h1 className={styles.heroTitle}>Master Your Technical Interviews</h1>
@@ -21,7 +18,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Features Section */}
       <section className={styles.features}>
         <h2 className={styles.sectionTitle}>Why Choose Our Platform</h2>
         <div className={styles.featuresGrid}>
@@ -43,7 +39,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* How It Works */}
       <section className={styles.howItWorks}>
         <h2 className={styles.sectionTitle}>How It Works</h2>
         <div className={styles.steps}>
@@ -71,7 +66,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Testimonials */}
       <section className={styles.testimonials}>
         <h2 className={styles.sectionTitle}>Success Stories</h2>
         <div className={styles.testimonialCards}>
