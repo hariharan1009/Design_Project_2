@@ -1,4 +1,3 @@
-/* CodeEditor.module.css */
 .container {
   max-width: 1200px;
   margin: 0 auto;
@@ -331,4 +330,110 @@
   padding: 8px 16px;
   border-radius: 4px;
   cursor: pointer;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.stopwatchContainer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.stopwatch {
+  font-family: monospace;
+  font-size: 1rem;
+  background-color: #f5f5f5;
+  padding: 6px 12px;
+  border-radius: 4px;
+  color: #333;
+  min-width: 80px;
+  text-align: center;
+}
+
+.stopwatchControls {
+  display: flex;
+  gap: 6px;
+}
+
+.stopwatchButton {
+  padding: 4px 8px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+}
+
+.startButton {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.startButton:hover {
+  background-color: #3e8e41;
+}
+
+.stopButton {
+  background-color: #f44336;
+  color: white;
+}
+
+.stopButton:hover {
+  background-color: #d32f2f;
+}
+
+.resetButton {
+  background-color: #2196F3;
+  color: white;
+}
+
+.resetButton:hover {
+  background-color: #0b7dda;
+}
+
+.resetButton:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+/* ... existing styles ... */
+
+.editorHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding: 0 5px; /* Add some padding if needed */
+}
+
+.stopwatch {
+  background-color: #0b7dda;
+  color: #fff;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 1.1em;
+  font-family: 'monospace';
+  min-width: 70px; /* Ensure enough space for the time */
+  text-align: center;
+}
+
+
+.stopwatch button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-left: 5px;
+}
+
+.stopwatch button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
 }

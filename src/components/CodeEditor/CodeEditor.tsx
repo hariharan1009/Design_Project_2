@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import Groq from "groq-sdk";
 import styles from "./CodeEditor.module.css";
 
@@ -20,13 +20,13 @@ interface TestCase {
 
 const difficultyLevels = ["easy", "medium", "hard"];
 const questionTopics = [
-  "array", 
-  "string", 
-  "tree", 
-  "graph", 
-  "stack", 
-  "queue", 
-  "hashmap", 
+  "array",
+  "string",
+  "tree",
+  "graph",
+  "stack",
+  "queue",
+  "hashmap",
   "linkedlist",
   "dynamic programming",
   "recursion",
@@ -52,23 +52,67 @@ export default function CodeEditor() {
   const [runningTests, setRunningTests] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<"testcases" | "results">("testcases");
 
+  // Stopwatch State
+  const [time, setTime] = useState<number>(0); // Time in seconds
+  const [isRunning, setIsRunning] = useState<boolean>(false);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
   const groq = new Groq({
     apiKey: process.env.NEXT_PUBLIC_GROQ_API_KEY,
     dangerouslyAllowBrowser: true,
   });
 
+  // Effect for stopwatch
+  useEffect(() => {
+    if (isRunning) {
+      timerRef.current = setInterval(() => {
+        setTime((prevTime) => prevTime + 1);
+      }, 1000);
+    } else {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    }
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, [isRunning]);
+
+  const formatTime = (totalSeconds: number): string => {
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  const startStopwatch = () => {
+    setIsRunning(true);
+  };
+
+  const stopStopwatch = () => {
+    setIsRunning(false);
+  };
+
+  const resetStopwatch = () => {
+    setIsRunning(false);
+    setTime(0);
+  };
+
   useEffect(() => {
     generateQuestion();
+    resetStopwatch(); // Reset stopwatch on new question generation
   }, [language, difficulty, topic]);
 
   const generateQuestion = async () => {
     setQuestionLoading(true);
+    resetStopwatch(); // Ensure stopwatch is reset before loading a new question
     try {
       const response = await groq.chat.completions.create({
         messages: [{
           role: "user",
-          content: `Generate a ${difficulty} level ${language} coding question about ${topic} that would be appropriate for assessing time and space complexity. 
-          The question should be challenging but solvable in about 20-30 lines of code. 
+          content: `Generate a ${difficulty} level ${language} coding question about ${topic} that would be appropriate for assessing time and space complexity.
+          The question should be challenging but solvable in about 20-30 lines of code.
           Make sure the question clearly relates to ${topic} concepts.
           Also provide 3 test cases in JSON format with input and expected output.
           Return the response in this exact format:
@@ -109,9 +153,11 @@ export default function CodeEditor() {
         timeComplexity: "Not analyzed yet",
         spaceComplexity: "Not analyzed yet"
       });
+      startStopwatch(); // Start stopwatch after question is loaded
     } catch (error) {
       setQuestion("We couldn't load a question. Please check your connection and try again.");
       console.error("Error generating question:", error);
+      stopStopwatch(); // Stop stopwatch if question generation fails
     } finally {
       setQuestionLoading(false);
     }
@@ -135,11 +181,12 @@ export default function CodeEditor() {
       suggestion: undefined,
       correctedCode: undefined
     });
+    stopStopwatch(); // Stop stopwatch when analyzing code
 
     try {
       const response = await groq.chat.completions.create({
         messages: [{
-          role: "user", 
+          role: "user",
           content: `Question: ${question}\n\nAnalyze this solution code and provide ONLY a JSON response with these exact fields:
 {
   "timeComplexity": "Big O time complexity (e.g., O(n))",
@@ -180,8 +227,8 @@ ${code}
       setAnalysis({
         timeComplexity: "Analysis failed",
         spaceComplexity: "Analysis failed",
-        suggestion: error instanceof Error ? 
-          `Suggestion: ${error.message}` : 
+        suggestion: error instanceof Error ?
+          `Suggestion: ${error.message}` :
           "Something went wrong. Please check your code and try again."
       });
     } finally {
@@ -198,6 +245,7 @@ ${code}
     setRunningTests(true);
     setTestResults([]);
     setActiveTab("results");
+    stopStopwatch(); // Stop stopwatch when running tests
 
     try {
       const response = await groq.chat.completions.create({
@@ -251,11 +299,11 @@ ${JSON.stringify(testCases, null, 2)}`
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>Code Complexity Challenge</h1>
-      
+
       <div className={styles.questionSection}>
         <div className={styles.questionHeader}>
           <h2>Challenge Question</h2>
-          <button 
+          <button
             onClick={generateNewQuestion}
             disabled={questionLoading}
             className={styles.newQuestionButton}
@@ -275,8 +323,8 @@ ${JSON.stringify(testCases, null, 2)}`
       <div className={styles.controls}>
         <div className={styles.controlGroup}>
           <label>Language:</label>
-          <select 
-            value={language} 
+          <select
+            value={language}
             onChange={(e) => setLanguage(e.target.value)}
             className={styles.select}
             disabled={questionLoading}
@@ -289,8 +337,8 @@ ${JSON.stringify(testCases, null, 2)}`
 
         <div className={styles.controlGroup}>
           <label>Difficulty:</label>
-          <select 
-            value={difficulty} 
+          <select
+            value={difficulty}
             onChange={(e) => setDifficulty(e.target.value)}
             className={styles.select}
             disabled={questionLoading}
@@ -303,8 +351,8 @@ ${JSON.stringify(testCases, null, 2)}`
 
         <div className={styles.controlGroup}>
           <label>Topic:</label>
-          <select 
-            value={topic} 
+          <select
+            value={topic}
             onChange={(e) => setTopic(e.target.value)}
             className={styles.select}
             disabled={questionLoading}
@@ -314,16 +362,16 @@ ${JSON.stringify(testCases, null, 2)}`
             ))}
           </select>
         </div>
-        
-        <button 
-          onClick={analyzeCode} 
+
+        <button
+          onClick={analyzeCode}
           disabled={loading || questionLoading}
           className={styles.analyzeButton}
         >
           {loading ? "Analyzing..." : "Analyze Solution"}
         </button>
 
-        <button 
+        <button
           onClick={runTestCases}
           disabled={runningTests || questionLoading || testCases.length === 0}
           className={styles.testButton}
@@ -334,7 +382,16 @@ ${JSON.stringify(testCases, null, 2)}`
 
       <div className={styles.mainContent}>
         <div className={styles.codeEditorContainer}>
-          <h2>Your Solution Code</h2>
+          <div className={styles.editorHeader}>
+            <h2>Your Solution Code</h2>
+            <div className={styles.stopwatch}>
+              <span className={styles.stopwatchTime}>{formatTime(time)}</span>
+              {/* You can add start/stop/reset buttons here if you want manual control */}
+              {/* <button onClick={startStopwatch} disabled={isRunning}>Start</button>
+              <button onClick={stopStopwatch} disabled={!isRunning}>Stop</button>
+              <button onClick={resetStopwatch}>Reset</button> */}
+            </div>
+          </div>
           <textarea
             value={code}
             onChange={(e) => setCode(e.target.value)}
@@ -371,11 +428,11 @@ ${JSON.stringify(testCases, null, 2)}`
                     </div>
                     <div className={styles.testCaseContent}>
                       <div>
-                        <strong>Input:</strong> 
+                        <strong>Input:</strong>
                         <pre>{test.input}</pre>
                       </div>
                       <div>
-                        <strong>Expected:</strong> 
+                        <strong>Expected:</strong>
                         <pre>{test.expectedOutput}</pre>
                       </div>
                     </div>
@@ -406,16 +463,16 @@ ${JSON.stringify(testCases, null, 2)}`
                     </div>
                     <div className={styles.testCaseContent}>
                       <div>
-                        <strong>Input:</strong> 
+                        <strong>Input:</strong>
                         <pre>{test.input}</pre>
                       </div>
                       <div>
-                        <strong>Expected:</strong> 
+                        <strong>Expected:</strong>
                         <pre>{test.expectedOutput}</pre>
                       </div>
                       {!test.passed && (
                         <div>
-                          <strong>Actual:</strong> 
+                          <strong>Actual:</strong>
                           <pre>{test.actualOutput}</pre>
                         </div>
                       )}
@@ -424,8 +481,8 @@ ${JSON.stringify(testCases, null, 2)}`
                 ))
               ) : (
                 <div className={styles.noResults}>
-                  {testCases.length > 0 
-                    ? "Run tests to see results" 
+                  {testCases.length > 0
+                    ? "Run tests to see results"
                     : "No test cases available"}
                 </div>
               )}
@@ -436,7 +493,7 @@ ${JSON.stringify(testCases, null, 2)}`
 
       <div className={styles.analysisSection}>
         <h2>Code Analysis</h2>
-        
+
         <div className={styles.complexityContainer}>
           <div className={styles.complexityBox}>
             <h3>Time Complexity</h3>
@@ -444,7 +501,7 @@ ${JSON.stringify(testCases, null, 2)}`
               {loading ? "..." : analysis.timeComplexity}
             </div>
           </div>
-          
+
           <div className={styles.complexityBox}>
             <h3>Space Complexity</h3>
             <div className={styles.complexityValue}>
@@ -470,7 +527,7 @@ ${JSON.stringify(testCases, null, 2)}`
             >
               {showCorrectedCode ? "Hide Corrected Code" : "Show Corrected Code"}
             </button>
-            
+
             {showCorrectedCode && (
               <div className={styles.correctedCodeBox}>
                 <h3>Optimized Solution</h3>
