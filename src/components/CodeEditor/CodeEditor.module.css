@@ -6,7 +6,6 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
-}
 
 .title {
   text-align: center;
@@ -398,7 +397,7 @@
 }
 
 .resetButton:disabled {
-  background-color: #cccccc;
+  background-color: #2196F3;
   cursor: not-allowed;
 }
 /* ... existing styles ... */
@@ -410,30 +409,43 @@
   margin-bottom: 10px;
   padding: 0 5px; /* Add some padding if needed */
 }
-
 .stopwatch {
-  background-color: #0b7dda;
-  color: #fff;
-  padding: 5px 10px;
-  border-radius: 5px;
-  font-size: 1.1em;
-  font-family: 'monospace';
-  min-width: 70px; /* Ensure enough space for the time */
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+  background-color: #2196F3;
+  color: #ffffff;
+}
+
+.stopwatchTime {
+  font-family: monospace;
+  font-size: 1.1rem;
+  min-width: 60px;
   text-align: center;
 }
 
-
-.stopwatch button {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  padding: 5px 10px;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-left: 5px;
+.stopwatchControls {
+  display: flex;
+  gap: 5px;
 }
 
-.stopwatch button:disabled {
-  background-color: #cccccc;
+.stopwatchButton {
+  padding: 5px 10px;
+  color: white;
+  background-color: #2196F3;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.stopwatchButton:hover {
+  background-color: #1976D2;
+}
+
+.stopwatchButton:disabled {
+  opacity: 0.6;
   cursor: not-allowed;
+}
 }

@@ -386,10 +386,31 @@ ${JSON.stringify(testCases, null, 2)}`
             <h2>Your Solution Code</h2>
             <div className={styles.stopwatch}>
               <span className={styles.stopwatchTime}>{formatTime(time)}</span>
-              {/* You can add start/stop/reset buttons here if you want manual control */}
-              {/* <button onClick={startStopwatch} disabled={isRunning}>Start</button>
-              <button onClick={stopStopwatch} disabled={!isRunning}>Stop</button>
-              <button onClick={resetStopwatch}>Reset</button> */}
+              <div className={styles.stopwatchControls}>
+                {!isRunning ? (
+                  <button 
+                    onClick={startStopwatch} 
+                    className={styles.stopwatchButton}
+                    disabled={questionLoading}
+                  >
+                    Start
+                  </button>
+                ) : (
+                  <button 
+                    onClick={stopStopwatch} 
+                    className={styles.stopwatchButton}
+                  >
+                    Stop
+                  </button>
+                )}
+                <button 
+                  onClick={resetStopwatch} 
+                  className={styles.stopwatchButton}
+                  disabled={time === 0}
+                >
+                  Reset
+                </button>
+              </div>
             </div>
           </div>
           <textarea
