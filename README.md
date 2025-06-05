@@ -65,7 +65,8 @@ MockMate/
 │   └── page.tsx
 ├── components/
 │   ├── CodeEditor/
-│   ├── Dashboard/
+│   ├── Header/
+│   ├── Footer/
 │   ├── InterviewAssistant/
 ├── public/
 ├── package.json
