@@ -10,8 +10,8 @@ export default function Header() {
                 </Link>
         <nav className={styles.nav}>
           <Link href="/">Home</Link>
-          <Link href="/CodeEditor">Code Editor</Link>
           <Link href="/InterviewAssistant">Interview Assistant</Link>
+           <Link href="/CodeEditor">Code Challenge</Link>
         </nav>
       </div>
     </header>

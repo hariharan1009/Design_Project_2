@@ -13,7 +13,7 @@ export default function HomePage() {
           </p>
           <div className={styles.ctaButtons}>
             <Link href="/InterviewAssistant" className={styles.primaryButton}>Start Interview</Link>
-            <Link href="/CodeEditor" className={styles.secondaryButton}>Try Code Editor</Link>
+            <Link href="/CodeEditor" className={styles.secondaryButton}>Try Coding Challenge</Link>
           </div>
         </div>
       </section>

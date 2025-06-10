@@ -298,7 +298,7 @@ ${JSON.stringify(testCases, null, 2)}`
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>Code Complexity Challenge</h1>
+      <h1 className={styles.title}>Coding  Challenge</h1>
 
       <div className={styles.questionSection}>
         <div className={styles.questionHeader}>
